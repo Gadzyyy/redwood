@@ -31,8 +31,8 @@
     "core-js": "3.21.1"
   },
   "devDependencies": {
-    "@babel/cli": "7.16.7",
-    "@babel/core": "7.16.7",
+    "@babel/cli": "7.17.6",
+    "@babel/core": "7.17.9",
     "@prisma/sdk": "3.11.1",
     "esbuild": "0.14.36",
     "jest": "27.5.1"
