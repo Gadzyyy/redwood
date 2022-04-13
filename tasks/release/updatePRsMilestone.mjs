@@ -1,79 +1,79 @@
 /* eslint-env node, es2021 */
-import { $ } from 'zx'
+import { $ } from 'zx';
 
-import octokit from './octokit.mjs'
-import { confirm, confirmRuns, ask, check, ok } from './prompts.mjs'
+import octokit from './octokit.mjs';
+import { confirm, confirmRuns, ask, check, ok } from './prompts.mjs';
 
 /**
  * @param {'next-release' | 'next-release-patch'} fromTitle
  * @param {string} toTitle
  */
 export default async function updatePRsMilestone(fromTitle, toTitle) {
-  let milestone = await getMilestone(toTitle)
+  let milestone = await getMilestone(toTitle);
 
   if (!milestone) {
     const createOk = await confirm(
       ask`Milestone ${toTitle} doesn't exist. Ok to create it?`
-    )
+    );
     if (!createOk) {
-      return
+      return;
     }
 
     const {
       data: { node_id: id, number },
-    } = await createMilestone(toTitle)
+    } = await createMilestone(toTitle);
 
-    milestone = { title: toTitle, id, number }
+    milestone = { title: toTitle, id, number };
   }
 
-  const fromMilestoneId = (await getMilestone(fromTitle)).id
+  const fromMilestoneId = (await getMilestone(fromTitle)).id;
 
-  const pullRequestIds = await getPullRequestIdsWithMilestone(fromMilestoneId)
+  const pullRequestIds = await getPullRequestIdsWithMilestone(fromMilestoneId);
 
   if (!pullRequestIds.length) {
     console.log(ok`No pull requests with milestone ${fromTitle}`)
-    return
+    return;
   }
 
   const updateOk = await confirm(
     ask`Ok to update the milestone of ${pullRequestIds.length} PRs from ${fromTitle} to ${toTitle}?`
-  )
+  );
   if (!updateOk) {
-    return
+    return;
   }
 
   await Promise.all(
     pullRequestIds.map((pullRequestId) =>
       updatePullRequestMilestone(pullRequestId, milestone.id)
     )
-  )
+  );
 
-  await $`open https://github.com/redwoodjs/redwood/pulls?q=is%3Apr+milestone%3A${toTitle}`
+  await $`open https://github.com/redwoodjs/redwood/pulls?q=is%3Apr+milestone%3A${toTitle}`;
 
   const looksOk = await confirm(
     check`Updated the milestone of ${pullRequestIds.length} PRs\nDoes everything look ok?`
   )
   if (looksOk) {
-    return milestone
+    return milestone;
   }
 
   const undoPRs = await confirm(
     ask`Do you want to undo the changes to the PRs?`
-  )
+  );
   if (undoPRs) {
     await Promise.all(
       pullRequestIds.map((pullRequestId) =>
         updatePullRequestMilestone(pullRequestId, fromMilestoneId)
       )
-    )
+    );
   }
 
-  const undoMilestone = await confirm(ask`Do you want to delete the milestone`)
+  const undoMilestone = await confirm(ask`Do you want to delete the milestone`);
   if (undoMilestone) {
-    await deleteMilestone(milestone.number)
+    await deleteMilestone(milestone.number);
   }
 
-  return
+  return;
 }
 
 // Helpers
@@ -96,11 +96,11 @@ async function getMilestone(title) {
     },
   } = /** @type GetMilestonesRes */ (
     await octokit.graphql(GET_MILESTONES, { title })
-  )
+  );
 
-  let milestone = milestones.find((milestone) => milestone.title === title)
+  let milestone = milestones.find((milestone) => milestone.title === title);
 
-  return milestone
+  return milestone;
 }
 
 export const GET_MILESTONES = `
@@ -119,7 +119,7 @@ export const GET_MILESTONES = `
       }
     }
   }
-`
+`;
 
 /**
  * @param {string} title
@@ -131,7 +131,7 @@ function createMilestone(title) {
     owner: 'redwoodjs',
     repo: 'redwood',
     title,
-  })
+  });
 }
 
 /**
@@ -157,9 +157,9 @@ export async function getPullRequestIdsWithMilestone(milestoneId) {
     await octokit.graphql(GET_PULL_REQUEST_IDS, {
       milestoneId,
     })
-  )
+  );
 
-  return pullRequests.map((pullRequest) => pullRequest.id)
+  return pullRequests.map((pullRequest) => pullRequest.id);
 }
 
 export const GET_PULL_REQUEST_IDS = `
@@ -174,7 +174,7 @@ export const GET_PULL_REQUEST_IDS = `
       }
     }
   }
-`
+`;
 
 /**
  * @param {string} pullRequestId
@@ -184,7 +184,7 @@ function updatePullRequestMilestone(pullRequestId, milestoneId) {
   return octokit.graphql(UPDATE_PULL_REQUEST_MILESTONE, {
     pullRequestId,
     milestoneId,
-  })
+  });
 }
 
 export const UPDATE_PULL_REQUEST_MILESTONE = `
@@ -195,7 +195,7 @@ export const UPDATE_PULL_REQUEST_MILESTONE = `
       clientMutationId
     }
   }
-`
+`;
 
 /**
  * @param {number} milestone_number
@@ -212,7 +212,7 @@ export function closeMilestone(milestone_number) {
       state: 'closed',
       due_on: new Date().toISOString(),
     }
-  )
+  );
 }
 
 /**
@@ -228,5 +228,5 @@ function deleteMilestone(milestone_number) {
       // eslint-disable-next-line camelcase
       milestone_number,
     }
-  )
+  );
 }

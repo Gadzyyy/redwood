@@ -14,11 +14,11 @@
  * @see {@link https://yarnpkg.com/advanced/rulebook}
  */
 
-import c from 'ansi-colors'
-import fg from 'fast-glob'
-import { spawn } from 'node:child_process'
-import fs from 'node:fs'
-import path from 'node:path'
+import c from 'ansi-colors';
+import fg from 'fast-glob';
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * Instead of hard-coding, dynamically get all the possible workspaces from the workspaces glob
@@ -45,15 +45,15 @@ const workspaces = fg.sync(workspacesGlob, {
  */
 process.env.INIT_CWD = process.argv[2]
 
-const workspace = path.relative(process.env.PROJECT_CWD, process.env.INIT_CWD)
+const workspace = path.relative(process.env.PROJECT_CWD, process.env.INIT_CWD);
 
 /**
  * If this script wasn't run from a specific workspace, run it on all of them.
  */
 if (workspaces.includes(workspace)) {
-  await checkDeps(workspace)
+  await checkDeps(workspace);
 } else {
-  await Promise.all(workspaces.map((workspace) => checkDeps(workspace)))
+  await Promise.all(workspaces.map((workspace) => checkDeps(workspace)));
 }
 
 /**
@@ -65,7 +65,7 @@ async function checkDeps(workspace) {
   const commonErrorsToIgnore = [
     '➤ YN0000: │ User scripts prefixed with "pre" or "post" (like "prepublishOnly") will not be called in sequence anymore; prefer calling prologues and epilogues explicitly',
     /__testfixtures__/,
-  ]
+  ];
 
   const errorsToIgnore = {
     'packages/web': [
@@ -73,60 +73,60 @@ async function checkDeps(workspace) {
       '➤ YN0000: │ /Users/dom/prjcts/rw/redwood/packages/web/dist/entry/index.js:9:46: Undeclared dependency on ~redwood-app-root',
       '➤ YN0000: │ /Users/dom/prjcts/rw/redwood/packages/web/src/entry/index.js:3:1: Undeclared dependency on ~redwood-app-root',
     ],
-  }
+  };
 
   const workspaceErrorsToIgnore =
-    errorsToIgnore[workspace] || commonErrorsToIgnore
+    errorsToIgnore[workspace] || commonErrorsToIgnore;
 
   const ignoreRegExps = workspaceErrorsToIgnore.filter(
     (workspaceErrorToIgnore) => workspaceErrorToIgnore instanceof RegExp
-  )
+  );
 
-  process.stdout.write(`Checking deps for ${c.green(workspace)}...\n`)
+  process.stdout.write(`Checking deps for ${c.green(workspace)}...\n`);
 
   const child = await spawn(`yarn dlx @yarnpkg/doctor ${workspace}`, {
     shell: true,
-  })
+  });
 
-  let errorsStart = false
-  process.exitCode = 0
-  const errorsStartRegExp = new RegExp(`${workspace}/package.json`)
-  const errorsEndRegExp = /Completed/
+  let errorsStart = false;
+  process.exitCode = 0;
+  const errorsStartRegExp = new RegExp(`${workspace}/package.json`);
+  const errorsEndRegExp = /Completed/;
 
   /**
    * Get all the errors from `yarn dlx @yarnpkg/doctor ${workspace}`'s stdout.
    */
   for await (let chunk of child.stdout) {
-    chunk = chunk.toString().trim()
+    chunk = chunk.toString().trim();
 
     if (chunk.match(errorsStartRegExp)) {
-      errorsStart = true
-      continue
+      errorsStart = true;
+      continue;
     }
 
     if (!errorsStart) {
-      continue
+      continue;
     }
 
     if (chunk.match(errorsEndRegExp)) {
-      break
+      break;
     }
 
     if (
       workspaceErrorsToIgnore.includes(chunk) ||
       ignoreRegExps.some((ignoreRegExp) => ignoreRegExp.test(chunk))
     ) {
-      continue
+      continue;
     }
 
-    process.stdout.write(chunk)
-    process.stdout.write('\n')
-    process.exitCode = 1
+    process.stdout.write(chunk);
+    process.stdout.write('\n');
+    process.exitCode = 1;
   }
 
   if (process.exitCode === 1) {
     process.stdout.write(`Failed with errors for ${c.red(workspace)}\n`)
-    return
+    return;
   }
 
   process.stdout.write(`Done checking deps for ${c.green(workspace)}\n`)

@@ -1,10 +1,10 @@
 /* eslint-env node, es6*/
 
-const fs = require('fs')
-const path = require('path')
+const fs = require('fs');
+const path = require('path');
 
-const execa = require('execa')
-const prompts = require('prompts')
+const execa = require('execa');
+const prompts = require('prompts');
 
 async function applyCodemod(codemod, target) {
   const args = [
@@ -14,15 +14,15 @@ async function applyCodemod(codemod, target) {
     '--parser',
     'tsx',
     '--verbose=2',
-  ]
+  ];
 
-  args.push()
+  args.push();
 
   await execa(
     'yarn jscodeshift',
     args,
     getExecaOptions(path.resolve(__dirname))
-  )
+  );
 }
 
 /** @type {(string) => import('execa').Options} */
@@ -34,22 +34,22 @@ const getExecaOptions = (cwd) => ({
   env: {
     RW_PATH: path.join(__dirname, '../../'),
   },
-})
+});
 
 const updatePkgJsonScripts = ({ projectPath, scripts }) => {
-  const projectPackageJsonPath = path.join(projectPath, 'package.json')
+  const projectPackageJsonPath = path.join(projectPath, 'package.json');
   const projectPackageJson = JSON.parse(
     fs.readFileSync(projectPackageJsonPath, 'utf-8')
-  )
+  );
   projectPackageJson.scripts = {
     ...projectPackageJson.scripts,
     ...scripts,
-  }
+  };
   fs.writeFileSync(
     projectPackageJsonPath,
     JSON.stringify(projectPackageJson, undefined, 2)
-  )
-}
+  );
+};
 
 // Confirmation prompt when using --no-copyFromFixture --no-link'
 async function confirmNoFixtureNoLink(copyFromFixtureOption, linkOption) {
@@ -67,11 +67,11 @@ async function confirmNoFixtureNoLink(copyFromFixtureOption, linkOption) {
       },
       {
         onCancel: () => {
-          process.exit(1)
+          process.exit(1);
         },
       }
-    )
-    return checkNoLink
+    );
+    return checkNoLink;
   }
 }
 
@@ -80,4 +80,4 @@ module.exports = {
   applyCodemod,
   updatePkgJsonScripts,
   confirmNoFixtureNoLink,
-}
+};

@@ -1,26 +1,26 @@
-const fs = require('fs')
-const path = require('path')
+const fs = require('fs');
+const path = require('path');
 
-const { merge } = require('webpack-merge')
+const { merge } = require('webpack-merge');
 
-const { getSharedPlugins } = require('@redwoodjs/core/config/webpack.common.js')
+const { getSharedPlugins } = require('@redwoodjs/core/config/webpack.common.js');
 const {
   importStatementPath,
   getConfig,
   getPaths,
-} = require('@redwoodjs/internal')
+} = require('@redwoodjs/internal');
 
-const config = getConfig()
+const config = getConfig();
 
-const rwjsPaths = getPaths()
+const rwjsPaths = getPaths();
 
-const staticAssetsFolder = path.join(getPaths().web.base, 'public')
+const staticAssetsFolder = path.join(getPaths().web.base, 'public');
 
 function isPackageInstalled(alias) {
   try {
-    return Boolean(require(alias))
+    return Boolean(require(alias));
   } catch (e) {
-    return false
+    return false;
   }
 }
 
@@ -31,12 +31,12 @@ function withEmotionVersionFallback(config) {
     'emotion-theming': '@emotion/react',
   }).reduce((acc, [packageName, alias]) => {
     if (isPackageInstalled(alias)) {
-      acc[packageName] = require.resolve(alias)
+      acc[packageName] = require.resolve(alias);
     }
-    return acc
-  }, {})
+    return acc;
+  }, {});
 
-  return merge(config, { resolve: { alias } })
+  return merge(config, { resolve: { alias } });
 }
 
 const baseConfig = {
@@ -54,20 +54,20 @@ const baseConfig = {
   managerWebpack: (sbConfig) => {
     const userManagerPath = fs.existsSync(rwjsPaths.web.storybookManagerConfig)
       ? rwjsPaths.web.storybookManagerConfig
-      : './manager.example.js'
+      : './manager.example.js';
     sbConfig.resolve.alias['~__REDWOOD__USER_STORYBOOK_MANAGER_CONFIG'] =
-      userManagerPath
+      userManagerPath;
 
-    return sbConfig
+    return sbConfig;
   },
   webpackFinal: (sbConfig, { configType }) => {
     // configType is 'PRODUCTION' or 'DEVELOPMENT', why shout?
     const isEnvProduction =
-      configType && configType.toLowerCase() === 'production'
+      configType && configType.toLowerCase() === 'production';
 
     const rwConfig = isEnvProduction
       ? require('@redwoodjs/core/config/webpack.production')
-      : require('@redwoodjs/core/config/webpack.development')
+      : require('@redwoodjs/core/config/webpack.development');
 
     // We replace imports to "@redwoodjs/router" with our own implementation in "@redwoodjs/testing"
     sbConfig.resolve.alias['@redwoodjs/router$'] = require.resolve(
@@ -75,15 +75,15 @@ const baseConfig = {
     )
     sbConfig.resolve.alias['~__REDWOOD__USER_ROUTES_FOR_MOCK'] =
       rwjsPaths.web.routes
-    sbConfig.resolve.alias['~__REDWOOD__USER_WEB_SRC'] = rwjsPaths.web.src
+    sbConfig.resolve.alias['~__REDWOOD__USER_WEB_SRC'] = rwjsPaths.web.src;
 
     // Determine the default storybook style file to use.
-    const supportedStyleIndexFiles = ['index.scss', 'index.sass', 'index.css']
+    const supportedStyleIndexFiles = ['index.scss', 'index.sass', 'index.css'];
     for (let file of supportedStyleIndexFiles) {
-      const filePath = path.join(rwjsPaths.web.src, file)
+      const filePath = path.join(rwjsPaths.web.src, file);
       if (fs.existsSync(filePath)) {
-        sbConfig.resolve.alias['~__REDWOOD__USER_WEB_DEFAULT_CSS'] = filePath
-        break
+        sbConfig.resolve.alias['~__REDWOOD__USER_WEB_DEFAULT_CSS'] = filePath;
+        break;
       }
     }
 
@@ -91,9 +91,9 @@ const baseConfig = {
       ? rwjsPaths.web.storybookPreviewConfig
       : './preview.example.js'
     sbConfig.resolve.alias['~__REDWOOD__USER_STORYBOOK_PREVIEW_CONFIG'] =
-      userPreviewPath
+      userPreviewPath;
 
-    sbConfig.resolve.extensions = rwConfig.resolve.extensions
+    sbConfig.resolve.extensions = rwConfig.resolve.extensions;
     sbConfig.resolve.plugins = rwConfig.resolve.plugins // Directory Named Plugin
 
     // Webpack v5 does not include polyfills. Will error without these:
@@ -107,19 +107,19 @@ const baseConfig = {
       stream: false,
       zlib: false,
       path: false,
-    }
+    };
 
     // ** PLUGINS **
     sbConfig.plugins = [
       ...sbConfig.plugins,
       ...getSharedPlugins(isEnvProduction),
-    ]
+    ];
 
     // ** LOADERS **
-    sbConfig.module.rules = rwConfig.module.rules
+    sbConfig.module.rules = rwConfig.module.rules;
 
     // ** NODE **
-    sbConfig.node = rwConfig.node
+    sbConfig.node = rwConfig.node;
 
     // Performance Improvements:
     // https://webpack.js.org/guides/build-performance/#avoid-extra-optimization-steps
@@ -127,31 +127,31 @@ const baseConfig = {
       removeAvailableModules: false,
       removeEmptyChunks: false,
       splitChunks: false,
-    }
+    };
     // https://webpack.js.org/guides/build-performance/#output-without-path-info
-    sbConfig.output.pathinfo = false
+    sbConfig.output.pathinfo = false;
 
-    sbConfig = withEmotionVersionFallback(sbConfig)
+    sbConfig = withEmotionVersionFallback(sbConfig);
 
-    return sbConfig
+    return sbConfig;
   },
   // only set staticDirs when running Storybook process; will fail if set for SB --build
   ...(process.env.NODE_ENV !== 'production' && {
     staticDirs: [`${staticAssetsFolder}`],
   }),
-}
+};
 
 const mergeUserStorybookConfig = (baseConfig) => {
-  const redwoodPaths = getPaths()
+  const redwoodPaths = getPaths();
 
-  const hasCustomConfig = fs.existsSync(redwoodPaths.web.storybookConfig)
+  const hasCustomConfig = fs.existsSync(redwoodPaths.web.storybookConfig);
   if (!hasCustomConfig) {
-    return baseConfig
+    return baseConfig;
   }
 
-  const userStorybookConfig = require(redwoodPaths.web.storybookConfig)
-  return merge(baseConfig, userStorybookConfig)
+  const userStorybookConfig = require(redwoodPaths.web.storybookConfig);
+  return merge(baseConfig, userStorybookConfig);
 }
 
 /** @returns {import('webpack').Configuration} Webpack Configuration with storybook config */
-module.exports = mergeUserStorybookConfig(baseConfig)
+module.exports = mergeUserStorybookConfig(baseConfig);

@@ -1,7 +1,7 @@
 /* eslint-env node, es2021 */
-import c from 'ansi-colors'
-import boxen from 'boxen'
-import prompts from 'prompts'
+import c from 'ansi-colors';
+import boxen from 'boxen';
+import prompts from 'prompts';
 
 /**
  * Wrapper around `prompts` to exit on crtl c.
@@ -14,7 +14,7 @@ export function exitOnCancelPrompts(promptsObject, promptsOptions) {
   return prompts(promptsObject, {
     ...promptsOptions,
     onCancel: () => process.exit(1),
-  })
+  });
 }
 
 /**
@@ -28,9 +28,9 @@ export async function promptForSemver() {
     message: ask`Which semver are you releasing?`,
     choices: [{ value: 'major' }, { value: 'minor' }, { value: 'patch' }],
     initial: 2,
-  })
+  });
 
-  return semver
+  return semver;
 }
 
 /**
@@ -49,13 +49,13 @@ export async function confirm(
     type: 'confirm',
     name,
     message,
-  })
+  });
 
   if (answer[name] || !exit) {
-    return answer[name]
+    return answer[name];
   }
 
-  process.exit(exitCode)
+  process.exit(exitCode);
 }
 
 /**
@@ -86,24 +86,24 @@ function makeStringFormatter(prefix) {
       (string, nextString, i) =>
         (string += nextString + c.green(values[i] ?? '')),
       ''
-    )
+    );
 
-    return `${prefix} ${message}`
-  }
+    return `${prefix} ${message}`;
+  };
 }
 
-export const ASK = c.bgBlue(c.black('  ASK  '))
-export const CHECK = c.bgYellow(c.black(' CHECK '))
-export const FIX = c.bgRed(c.black('  FIX  '))
-export const OK = c.bgGreen(c.black('  O K  '))
+export const ASK = c.bgBlue(c.black('  ASK  '));
+export const CHECK = c.bgYellow(c.black(' CHECK '));
+export const FIX = c.bgRed(c.black('  FIX  '));
+export const OK = c.bgGreen(c.black('  O K  '));
 // https://stackoverflow.com/questions/38760554/how-to-print-cross-mark-or-check-mark-in-tcl
-export const HEAVY_X = c.red('\u2716')
-export const HEAVY_CHECK = c.green('\u2714')
+export const HEAVY_X = c.red('\u2716');
+export const HEAVY_CHECK = c.green('\u2714');
 
-export const ask = makeStringFormatter(ASK)
-export const check = makeStringFormatter(CHECK)
-export const fix = makeStringFormatter(`${HEAVY_X} ${FIX}`)
-export const ok = makeStringFormatter(`${HEAVY_CHECK} ${OK}`)
+export const ask = makeStringFormatter(ASK);
+export const check = makeStringFormatter(CHECK);
+export const fix = makeStringFormatter(`${HEAVY_X} ${FIX}`);
+export const ok = makeStringFormatter(`${HEAVY_CHECK} ${OK}`);
 
 /**
  * @param {string} message
@@ -115,22 +115,22 @@ export async function confirmRuns(
   runs,
   { name, exit, exitCode } = { name: 'confirmed', exit: false, exitCode: 0 }
 ) {
-  const confirmed = await confirm(message, { name, exit, exitCode })
+  const confirmed = await confirm(message, { name, exit, exitCode });
 
   if (!confirmed) {
-    return false
+    return false;
   }
 
   if (!Array.isArray(runs)) {
-    return runs()
+    return runs();
   }
 
   const runResults = []
 
   for (const run of runs) {
-    const runResult = await run()
-    runResults.push(runResult)
+    const runResult = await run();
+    runResults.push(runResult);
   }
 
-  return runResults
+  return runResults;
 }

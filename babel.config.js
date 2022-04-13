@@ -114,4 +114,4 @@ module.exports = {
     process.env.NODE_ENV === 'test'
       ? []
       : [/\.test\.(js|ts)/, '**/__tests__', '**/__mocks__', '**/__snapshots__'],
-}
+};

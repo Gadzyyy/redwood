@@ -2,11 +2,11 @@
 /**
  * Make sure tarballs don't change from under us.
  */
-const { spawnSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { spawnSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-const fg = require('fast-glob')
+const fg = require('fast-glob');
 
 /**
  * This line at the end tends to vary:
@@ -26,7 +26,7 @@ async function getTarballContents(workspace) {
       shell: true,
       cwd: process.env.PROJECT_CWD,
     }
-  )
+  );
 
   return child.stdout
     .toString()
@@ -37,7 +37,7 @@ async function getTarballContents(workspace) {
 
 const { workspaces: workspacesGlob } = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../package.json'))
-)
+);
 
 const workspaces = fg
   .sync(workspacesGlob, { onlyDirectories: true })
@@ -48,6 +48,6 @@ describe('tarballs', () => {
     it(workspace, async () => {
       const tarballContents = await getTarballContents(workspace)
       expect(tarballContents).toMatchSnapshot()
-    })
+    });
   }
-})
+});

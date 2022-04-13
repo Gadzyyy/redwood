@@ -1,2 +1,2 @@
 /* eslint-env es6, commonjs */
-module.exports = require('../dist/api')
+module.exports = require('../dist/api');
